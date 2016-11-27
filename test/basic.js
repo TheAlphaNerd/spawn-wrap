@@ -7,6 +7,7 @@ var onExit = require('signal-exit')
 var cp = require('child_process')
 var fixture = require.resolve('./fixtures/script.js')
 var npmFixture = require.resolve('./fixtures/npm')
+var nodeFixture = require.resolve('./fixtures/node')
 var fs = require('fs')
 var path = require('path')
 
@@ -125,7 +126,7 @@ t.test('spawn execPath', function (t) {
 })
 
 t.test('spawn node', function (t) {
-  t.plan(4)
+  t.plan(6)
 
   t.test('basic', function (t) {
     var child = cp.spawn('node', [fixture, 'xyz'])
@@ -138,6 +139,29 @@ t.test('spawn node', function (t) {
       t.equal(code, 0)
       t.equal(signal, null)
       t.equal(out, expect)
+      t.end()
+    })
+  })
+
+  t.test('custom path', function (t) {
+    var binPath = path.join(__dirname, 'fixtures') + ':' + process.env.PATH
+    var child = cp.spawn('node', [fixture, 'xyz'], {
+      env: {
+        path: binPath
+      }
+    })
+
+    child.on('close', function (code) {
+      t.equal(code, 1)
+      t.end()
+    })
+  })
+  
+  t.test('full custom path', function (t) {
+    var child = cp.spawn(nodeFixture, [fixture, 'xyz'])
+
+    child.on('close', function (code) {
+      t.equal(code, 1)
       t.end()
     })
   })
